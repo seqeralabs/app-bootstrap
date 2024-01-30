@@ -1,0 +1,114 @@
+import java.time.OffsetDateTime
+import java.time.format.DateTimeFormatter
+
+plugins {
+    id("groovy") 
+    id("com.github.johnrengelman.shadow") version "7.1.2"
+    id("io.micronaut.application") version "3.7.10"
+    id("com.google.cloud.tools.jib") version "3.4.0"
+}
+
+String gitVersion() {
+    def p = new ProcessBuilder() .command('sh','-c','git rev-parse --short HEAD') .start()
+    def r = p.waitFor()
+    return r==0 ? p.text.trim() : '(unknown)'
+}
+
+group "io.seqera"
+version "${rootProject.file('VERSION').text.trim()}"
+ext.commitId = gitVersion()
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation("io.micronaut:micronaut-http-client")
+    implementation("io.micronaut:micronaut-jackson-databind")
+    implementation("io.micronaut.groovy:micronaut-runtime-groovy")
+    implementation("io.micronaut.serde:micronaut-serde-jackson")
+    implementation("jakarta.annotation:jakarta.annotation-api")
+    implementation 'com.google.guava:guava:32.1.2-jre'
+    compileOnly("io.micronaut:micronaut-http-client")
+    compileOnly("io.micronaut:micronaut-http-validation")
+    compileOnly("io.micronaut.serde:micronaut-serde-processor")
+    runtimeOnly("ch.qos.logback:logback-classic")
+
+    testImplementation "org.codehaus.groovy:groovy-json"
+    testImplementation ("org.spockframework:spock-core:2.1-groovy-3.0") { exclude group: 'org.codehaus.groovy'; exclude group: 'net.bytebuddy' }
+}
+
+
+application {
+    mainClass.set("io.seqera.app.Application")
+}
+java {
+    sourceCompatibility = JavaVersion.toVersion("17")
+    targetCompatibility = JavaVersion.toVersion("17")
+}
+
+graalvmNative.toolchainDetection = false
+micronaut {
+    runtime("netty")
+    testRuntime("spock2")
+    processing {
+        incremental(true)
+        annotations("io.seqera.app.*")
+    }
+}
+
+//
+// Build container image with JIB
+// https://github.com/GoogleContainerTools/jib/tree/master/jib-gradle-plugin
+//
+jib {
+    from {
+        image = 'cr.seqera.io/public/nf-jdk:corretto-17.0.9-jemalloc'
+        platforms {
+            platform { architecture = 'amd64'; os = 'linux' }
+        }
+    }
+    to {
+        image = findProperty("jibRepo") ?: "cr.seqera.io/public/app:$version"
+    }
+    container {
+        creationTime = "${OffsetDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME)}"
+        filesModificationTime = "${OffsetDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME)}"
+        ports = ['8080']
+        entrypoint = '/bin/sh'
+        args = ['/launch.sh']  // copied from `src/main/jib` directory
+        environment = [
+                'MICRONAUT_ENVIRONMENTS': 'prod'
+        ]
+    }
+    extraDirectories {
+        paths {
+            path { from = file('src/main/jib'); }
+        }
+        permissions = ['/launch.sh': '755']
+    }
+    allowInsecureRegistries= findProperty("jibRepo")?.toString()?.indexOf('localhost') != -1
+}
+
+run{
+    def envs = findProperty('micronautEnvs')
+    def args = ["-Dmicronaut.environments=$envs"]
+    if( environment['JVM_OPTS'] ) args.add(environment['JVM_OPTS'])
+    jvmArgs args
+}
+
+
+/** Update version number for backend app and modules */
+task buildInfo { doLast {
+    def info = """\
+                name=${project.name}
+                group=${project.group}
+                version=${version}
+                commitId=${project.property('commitId')}
+            """.stripIndent().toString()
+    def f = file("${buildDir}/resources/main/META-INF/build-info.properties")
+    f.parentFile.mkdirs()
+    f.text = info
+} }
+buildInfo.dependsOn processResources
+compileGroovy.dependsOn buildInfo

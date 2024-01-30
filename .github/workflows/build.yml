@@ -1,0 +1,81 @@
+name: App CI
+on:
+  push:
+    branches:
+      - '*'
+      - '!refs/tags/.*'
+    tags-ignore:
+      - '*'
+    paths-ignore:
+      - 'docs/**'
+      - '*.md'
+  pull_request:
+    types: [opened, reopened, synchronize]
+    paths-ignore:
+      - 'docs/**'
+      - '*.md'
+
+jobs:
+  build:
+    name: Build App
+    if: "github.event == 'push' || github.repository != github.event.pull_request.head.repo.full_name"
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        java_version: [19]
+
+    steps:
+      - name: Environment
+        run: env | sort
+
+      - name: Docker Login
+        uses: docker/login-action@v2
+        if: "contains(github.event.head_commit.message, '[release]')"
+        with:
+          registry: "cr.seqera.io"
+          username: 'robot$seqera-github-org'
+          password: ${{ secrets.SEQERA_CR_PASSWORD }}
+
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+          submodules: true
+
+      - name: Setup Java ${{ matrix.java_version }}
+        uses: actions/setup-java@v3
+        with:
+          java-version: ${{matrix.java_version}}
+          distribution: 'temurin'
+          architecture: x64
+          cache: gradle
+
+      - name: Compile
+        run: ./gradlew assemble
+        env:
+          GRADLE_OPTS: '-Dorg.gradle.daemon=false'
+
+      - name: Tests
+        if: "!contains(github.event.head_commit.message, '[skip test]')"
+        run: |
+          ./gradlew check
+        env:
+          GRADLE_OPTS: '-Dorg.gradle.daemon=false'
+
+      - name: Release
+        if: "contains(github.event.head_commit.message, '[release]')"
+        run: |
+          bash tag-and-push.sh
+        env:
+          GRADLE_OPTS: '-Dorg.gradle.daemon=false'
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Publish tests report
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-reports-jdk-${{ matrix.java_version }}
+          path: |
+            **/build/reports/tests/test

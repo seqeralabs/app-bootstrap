@@ -1,0 +1,11 @@
+---
+netty:
+  default:
+    allocator:
+      max-order: 3
+---
+logger:
+  levels:
+    io.seqera: "DEBUG"
+    io.micronaut.retry.intercept.RecoveryInterceptor: "OFF"
+...
