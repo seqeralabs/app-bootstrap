@@ -13,7 +13,7 @@ import jakarta.inject.Inject
 import spock.lang.Specification
 
 @MicronautTest(application = Application)
-class ControllerTest extends Specification {
+class MyControllerTest extends Specification {
 
     @Inject
     @Client('/')

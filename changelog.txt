@@ -1,4 +1,6 @@
 # App changelog
+v1.0.0 - 30 Jan 2025
+- Update to Micronaut 4.7.x
 
 v0.0.0 - 30 Jan 2024
 - Initial commit
