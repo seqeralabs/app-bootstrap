@@ -4,7 +4,7 @@ import java.time.format.DateTimeFormatter
 plugins {
     id("groovy")
     id "com.github.johnrengelman.shadow" version "8.1.1"
-    id "io.micronaut.minimal.application" version "4.1.1"
+    id "io.micronaut.minimal.application" version "4.5.4"
     id "com.google.cloud.tools.jib" version "3.4.2"
     id 'org.asciidoctor.jvm.convert' version '3.3.2'
 }
@@ -92,6 +92,7 @@ java {
 }
 
 micronaut {
+    version micronautVersion
     runtime("netty")
     testRuntime("spock2")
     processing {
