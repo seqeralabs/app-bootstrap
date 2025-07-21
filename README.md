@@ -91,8 +91,8 @@ class Pet {
     String name, species, breed, color, description
     Integer age
     Boolean isAvailable
-    @DateCreated Date createdAt
-    @DateUpdated Date updatedAt
+    @DateCreated OffsetDatTime createdAt
+    @DateUpdated OffsetDatTime updatedAt
 }
 ```
 
