@@ -11,19 +11,22 @@ app-bootstrap/
 ├── api/                     # API definitions and exchange models
 │   ├── src/main/java/
 │   │   └── io/seqera/api/
-│   │       ├── exchange/    # Generated Request/Response DTOs
-│   │       └── spec/        # Generated Controller interfaces
+│   │       └── exchange/    # Generated Request/Response DTOs
 │   └── spec/                # TypeSpec API definitions (source of truth)
 │       ├── main.tsp         # Main API specification
 │       └── package.json     # TypeSpec build configuration
 ├── app/                     # Main application implementation
-│   └── src/main/groovy/
-│       └── io/seqera/app/
-│           ├── controller/  # API implementation
-│           ├── service/     # Business logic layer
-│           ├── repository/  # Data access layer
-│           ├── entity/      # Domain entities
-│           └── security/    # Authentication providers
+│   └── src/main/
+│       ├── java/
+│       │   └── io/seqera/api/
+│       │       └── spec/    # Generated Controller interfaces
+│       └── groovy/
+│           └── io/seqera/app/
+│               ├── controller/  # API implementation
+│               ├── service/     # Business logic layer
+│               ├── repository/  # Data access layer
+│               ├── entity/      # Domain entities
+│               └── security/    # Authentication providers
 ├── buildSrc/                # Custom Gradle plugins
 └── docs/                    # API documentation
 ```
@@ -35,9 +38,9 @@ app-bootstrap/
 #### 1. **API Module** (`api/`)
 - **TypeSpec Source**: `spec/main.tsp` - Single source of truth for API definitions
 - **Generated Models**: `src/main/java/io/seqera/api/exchange/` - DTOs for request/response
-- **Generated Interfaces**: `src/main/java/io/seqera/api/spec/` - Controller interfaces
 
 #### 2. **Application Module** (`app/`)
+- **Generated Interfaces**: `src/main/java/io/seqera/api/spec/` - Controller interfaces
 - **Entities**: `entity/Pet.groovy` - Domain models with Micronaut Data annotations
 - **Repositories**: `repository/PetRepository.groovy` - Data access with multiple database support
 - **Services**: Business logic layer (currently handled by controllers)
