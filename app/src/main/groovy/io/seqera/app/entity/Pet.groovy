@@ -3,6 +3,8 @@ package io.seqera.app.entity
 import io.micronaut.data.annotation.*
 import io.micronaut.data.model.naming.NamingStrategies
 
+import java.time.OffsetDateTime
+
 /**
  * Pet entity representing a pet in the pet shop system.
  * 
@@ -28,10 +30,10 @@ class Pet {
     Boolean isAvailable = true
 
     @DateCreated
-    Date createdAt
+    OffsetDateTime createdAt
 
     @DateUpdated
-    Date updatedAt
+    OffsetDateTime updatedAt
 
     Pet() {}
 
