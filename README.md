@@ -1,16 +1,288 @@
-# App name
+# Pet Shop API - Modern Java/Micronaut Application
 
-Bootstrap application for Micronaut based
+A comprehensive Pet Shop API demonstrating modern Java/Micronaut application best practices with multi-module structure, TypeSpec-driven API development, JWT authentication, and production-ready patterns.
 
-## Get started
+## 🏗️ Architecture Overview
+
+This project demonstrates a clean, maintainable multi-module architecture with API-first design:
 
 ```
-bash run.sh
+app-bootstrap/
+├── api/                     # API definitions and exchange models
+│   ├── src/main/java/
+│   │   └── io/seqera/api/
+│   │       ├── exchange/    # Generated Request/Response DTOs
+│   │       └── spec/        # Generated Controller interfaces
+│   └── spec/                # TypeSpec API definitions (source of truth)
+│       ├── main.tsp         # Main API specification
+│       └── package.json     # TypeSpec build configuration
+├── app/                     # Main application implementation
+│   └── src/main/groovy/
+│       └── io/seqera/app/
+│           ├── controller/  # API implementation
+│           ├── service/     # Business logic layer
+│           ├── repository/  # Data access layer
+│           ├── entity/      # Domain entities
+│           └── security/    # Authentication providers
+├── buildSrc/                # Custom Gradle plugins
+└── docs/                    # API documentation
 ```
 
-## Customization
+## 🚀 Key Features & Components
 
-1. Define the app name in the `settings.gradle` file.
-2. Define the `micronaut.app.name` in the `bootstrap.yml` file.
-3. Replace `APP_` prefixed environment variables with your own app prefix.
-4. Write your code.
+### Application Structure
+
+#### 1. **API Module** (`api/`)
+- **TypeSpec Source**: `spec/main.tsp` - Single source of truth for API definitions
+- **Generated Models**: `src/main/java/io/seqera/api/exchange/` - DTOs for request/response
+- **Generated Interfaces**: `src/main/java/io/seqera/api/spec/` - Controller interfaces
+
+#### 2. **Application Module** (`app/`)
+- **Entities**: `entity/Pet.groovy` - Domain models with Micronaut Data annotations
+- **Repositories**: `repository/PetRepository.groovy` - Data access with multiple database support
+- **Services**: Business logic layer (currently handled by controllers)
+- **Controllers**: `controller/PetController.groovy` - API implementation, `AuthController.groovy` - Authentication handling
+- **Security**: `security/BasicAuthenticationProvider.groovy` - JWT authentication
+
+### Technology Stack
+- **Framework**: Micronaut 4.9.7 with Groovy
+- **Authentication**: JWT with HTTP-only cookies
+- **Database**: PostgreSQL (production) + H2 (local development)
+- **Data Access**: Micronaut Data JDBC with multiple dialect support
+- **API Documentation**: TypeSpec → OpenAPI → Swagger UI
+- **Security**: JWT-based authentication with cookie storage
+- **Build**: Gradle with custom convention plugins
+- **Containerization**: Google Jib for optimized container images
+
+## 🔐 Security Architecture
+
+### JWT Cookie Authentication
+- **Authentication Provider**: Custom `BasicAuthenticationProvider` with hardcoded credentials
+- **Token Storage**: HTTP-only cookies for security
+- **Session Management**: JWT tokens with configurable expiration
+- **Protected Endpoints**: All `/pets/**` endpoints require authentication
+- **Public Endpoints**: Login pages, static resources, API documentation
+
+### Security Configuration
+- **Login Flow**: POST to `/login` → JWT cookie set → Redirect to `/dashboard`
+- **Logout Flow**: POST to `/logout` → Cookie cleared → Redirect to `/`
+- **Authentication Mode**: Cookie-based (not session-based)
+- **JWT Secret**: 256-bit minimum requirement (configured in `application.yml`)
+
+### Default Credentials
+- **Admin**: `username: admin`, `password: password`
+- **User**: `username: user`, `password: secret`
+
+## 🗂️ Database Architecture
+
+### Repository Pattern with Multi-Database Support
+- **PostgreSQL**: Production database with full SQL features
+- **H2**: Local development with PostgreSQL compatibility mode
+- **Repository Abstraction**: `@Primary` and `@Requires(env = "h2")` annotations for environment-specific implementations
+
+### Entity Design
+```groovy
+@MappedEntity("pets")
+class Pet {
+    @Id @GeneratedValue Long id
+    String name, species, breed, color, description
+    Integer age
+    Boolean isAvailable
+    @DateCreated Date createdAt
+    @DateUpdated Date updatedAt
+}
+```
+
+## 🛠️ API Development Workflow
+
+### TypeSpec-Driven Development
+
+1. **Define API Contract** in `api/spec/main.tsp`:
+   ```typescript
+   @route("/pets")
+   interface Pets {
+     @get list(): Pet[];
+     @post create(@body pet: CreatePetRequest): Pet;
+     @get("{id}") get(@path id: int64): Pet;
+   }
+   ```
+
+2. **Generate OpenAPI Spec**:
+   ```bash
+   cd api/spec
+   npm install
+   npm run build
+   # Generates: api/spec/tsp-output/@typespec/openapi3/openapi.yaml
+   ```
+
+3. **Generate Java Code**:
+   ```bash
+   ./gradlew :app:generateApiCode
+   # Generates interfaces in app/src/main/java/io/seqera/api/spec/
+   # Generates DTOs in api/src/main/java/io/seqera/api/exchange/
+   ```
+
+4. **Implement Controllers**: Controllers implement the generated interfaces
+
+### API Specification Publishing
+- **Swagger UI**: Automatically generated at `/openapi/index.html`
+- **OpenAPI Spec**: Available at `/openapi/openapi-latest.yaml`
+- **Versioned Specs**: Versioned files like `/openapi/openapi-1.0.0.yaml`
+- **WebJars Integration**: Uses Swagger UI WebJar for consistent styling
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Java 21 (with compatibility for Java 17)
+- PostgreSQL 15+ (for production mode)
+- Node.js (for TypeSpec compilation)
+
+### Local Development Setup
+
+#### 1. Using H2 Database (Recommended for Development)
+```bash
+# Run with H2 in-memory database
+./gradlew :app:run -PmicronautEnvs=h2
+
+# Access the application
+open http://localhost:8080/
+```
+
+#### 2. Using PostgreSQL
+```bash
+# Start PostgreSQL with Docker
+docker run -d \
+  --name postgres-pet-shop \
+  -e POSTGRES_DB=app_bootstrap \
+  -e POSTGRES_USER=postgres \
+  -e POSTGRES_PASSWORD=postgres \
+  -p 5432:5432 \
+  postgres:15
+
+# Run the application
+./gradlew :app:run
+```
+
+### Local Configuration Implications
+
+When running locally, the application:
+- **H2 Mode**: Uses in-memory database, data is lost on restart
+- **PostgreSQL Mode**: Requires external database, data persists
+- **Authentication**: Uses hardcoded credentials (not suitable for production)
+- **JWT Secret**: Uses default secret (should be overridden via `JWT_SECRET` env var)
+- **CORS**: Development-friendly CORS settings
+- **Logging**: Debug level enabled for `io.seqera` packages
+
+## 📊 API Documentation & Usage
+
+### Access Points
+- **Application**: http://localhost:8080/
+- **Login Page**: http://localhost:8080/login
+- **Dashboard**: http://localhost:8080/dashboard (requires authentication)
+- **API Documentation**: http://localhost:8080/openapi/index.html
+- **Pet API**: http://localhost:8080/pets (requires authentication)
+
+### Example Usage
+```bash
+# Login and save cookies
+curl -c cookies.txt -X POST http://localhost:8080/login \
+  -d "username=admin&password=password" \
+  -H "Content-Type: application/x-www-form-urlencoded"
+
+# Access protected Pet API
+curl -b cookies.txt http://localhost:8080/pets
+
+# Create a new pet
+curl -b cookies.txt -X POST http://localhost:8080/pets \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Fluffy",
+    "species": "Cat",
+    "breed": "Persian",
+    "age": 3,
+    "color": "White",
+    "description": "Friendly and playful"
+  }'
+```
+
+## 🧪 Development & Testing
+
+### Code Generation (Manual)
+```bash
+# Generate API code from TypeSpec (run manually when API changes)
+./gradlew :app:generateApiCode
+
+# Generate Swagger UI
+./gradlew :app:generateSwaggerUI
+```
+
+### Testing
+```bash
+# Run all tests
+./gradlew test
+
+# Run with H2 database
+./gradlew :app:test
+
+# Run specific test suites  
+./gradlew :app:test --tests "*PetRepositorySpec"
+./gradlew :app:test --tests "*AuthenticationSpec"
+```
+
+### Build & Deployment
+```bash
+# Build application
+./gradlew build
+
+# Build container image
+./gradlew :app:jibDockerBuild
+
+# Run linting and type checking
+./gradlew :app:compileGroovy
+```
+
+## 🏛️ Component Architecture
+
+### Controller Layer (`controller/`)
+- **PetController**: Implements `PetsApiSpec` interface from generated code
+- **AuthController**: Handles login/logout, dashboard rendering
+- **Security Annotations**: `@Secured` for authentication requirements
+
+### Repository Layer (`repository/`)
+- **PetRepository**: Abstract base with common CRUD operations
+- **PostgresPetRepository**: PostgreSQL-specific implementation
+- **H2PetRepository**: H2-specific implementation with `@Primary` for local development
+
+### Entity Layer (`entity/`)
+- **Pet**: Domain entity with Micronaut Data annotations
+- **Audit Fields**: `@DateCreated`, `@DateUpdated` for automatic timestamps
+- **Validation**: Bean validation annotations for data integrity
+
+### Security Layer (`security/`)
+- **BasicAuthenticationProvider**: Implements authentication logic
+- **JWT Configuration**: Cookie-based JWT with proper security headers
+- **Route Protection**: Security rules in `application.yml`
+
+## 📚 Additional Documentation
+
+For detailed component documentation, see the JavaDoc in each class:
+
+- **PetController**: RESTful pet management endpoints
+- **PetRepository**: Data access patterns and database abstraction  
+- **BasicAuthenticationProvider**: Authentication flow and JWT handling
+- **Pet Entity**: Domain model and data validation rules
+
+## 🔧 Configuration
+
+### Environment-Specific Configuration
+- **`application.yml`**: Base configuration
+- **`application-h2.yml`**: H2 database settings for local development
+- **Security Settings**: JWT configuration, authentication providers
+- **Database**: Multiple datasource support with environment switching
+
+### Production Considerations
+- **JWT Secret**: Override `JWT_SECRET` environment variable
+- **Database**: Configure proper PostgreSQL connection
+- **Authentication**: Replace hardcoded credentials with proper user management
+- **CORS**: Restrict CORS settings for production domains
+- **Logging**: Adjust log levels for production monitoring

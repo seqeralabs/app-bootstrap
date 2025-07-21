@@ -1,0 +1,5 @@
+---
+logger:
+  levels:
+    io.seqera: "DEBUG"
+    root: "INFO"

@@ -1,0 +1,9 @@
+---
+micronaut:
+  application:
+    name: app
+  config-client:
+    enabled: false
+aws:
+  region: "${AWS_REGION:eu-west-1}"
+...

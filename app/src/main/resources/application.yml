@@ -1,0 +1,81 @@
+---
+netty:
+  default:
+    allocator:
+      max-order: 3
+---
+datasources:
+  default:
+    url: jdbc:postgresql://localhost:5432/app_bootstrap
+    driverClassName: org.postgresql.Driver
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+    dialect: POSTGRES
+---
+micronaut:
+  router:
+    static-resources:
+      openapi:
+        mapping: "/openapi/**"
+        paths: [ "classpath:public/openapi" ]
+      webjars:
+        mapping: "/webjars/**"
+        paths: [ "classpath:META-INF/resources/webjars" ]
+  security:
+    enabled: true
+    authentication: cookie
+    redirect:
+      login-success: "/dashboard"
+      login-failure: "/login?error=true"
+      logout: "/"
+    token:
+      jwt:
+        signatures:
+          secret:
+            generator:
+              secret: "${JWT_SECRET:pleaseChangeThisSecretKeyToAtLeast32Chars}"
+              jws-algorithm: HS256
+        generator:
+          access-token:
+            expiration: 3600
+        cookie:
+          enabled: true
+          cookie-name: "JWT"
+          cookie-same-site: "lax"
+          cookie-secure: false
+    intercept-url-map:
+      # Static resources - anonymous access
+      - pattern: "/openapi/**"
+        http-method: "GET"
+        access: [ "isAnonymous()" ]
+      - pattern: "/webjars/**"
+        http-method: "GET"
+        access: [ "isAnonymous()" ]
+      # Allow anonymous access to service info endpoint
+      - pattern: "/service/info"
+        http-method: "GET"
+        access: [ "isAnonymous()" ]
+      # Allow anonymous access to login pages
+      - pattern: "/"
+        http-method: "GET"
+        access: [ "isAnonymous()" ]
+      - pattern: "/login"
+        http-method: "GET"
+        access: [ "isAnonymous()" ]
+      - pattern: "/login"
+        http-method: "POST"
+        access: [ "isAnonymous()" ]
+      - pattern: "/logout"
+        access: [ "isAnonymous()" ]
+      # Allow authenticated access to dashboard
+      - pattern: "/dashboard"
+        access: [ "isAuthenticated()" ]
+      # Require authentication for Pet API endpoints
+      - pattern: "/pets/**"
+        access: [ "isAuthenticated()" ]
+---
+logger:
+  levels:
+    io.seqera: "DEBUG"
+    io.micronaut.retry.intercept.RecoveryInterceptor: "OFF"
+...

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pet Shop API</title>
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            max-width: 800px; 
+            margin: 40px auto; 
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 { 
+            color: #2c3e50; 
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .welcome {
+            text-align: center;
+            margin-bottom: 40px;
+            color: #7f8c8d;
+        }
+        .actions {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 500;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .btn-primary {
+            background-color: #3498db;
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: #2980b9;
+        }
+        .btn-secondary {
+            background-color: #95a5a6;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background-color: #7f8c8d;
+        }
+        .features {
+            margin-top: 40px;
+            text-align: center;
+        }
+        .features h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        .features ul {
+            list-style: none;
+            padding: 0;
+            color: #7f8c8d;
+        }
+        .features li {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🐾 Pet Shop API</h1>
+        <div class="welcome">
+            <p>Welcome to the Pet Shop API management system.</p>
+            <p>Manage your pet inventory with our comprehensive CRUD operations.</p>
+        </div>
+        
+        <div class="actions">
+            <a href="/login" class="btn btn-primary">Login to Manage Pets</a>
+            <a href="/openapi/index.html" class="btn btn-secondary">View API Documentation</a>
+        </div>
+        
+        <div class="features">
+            <h3>Available Features</h3>
+            <ul>
+                <li>✅ Complete Pet CRUD Operations</li>
+                <li>✅ JWT Authentication</li>
+                <li>✅ H2 Database Support</li>
+                <li>✅ OpenAPI Documentation</li>
+                <li>✅ Swagger UI Integration</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

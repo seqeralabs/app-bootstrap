@@ -1,0 +1,11 @@
+plugins {
+    id 'io.seqera.java-common-conventions'
+    id 'application'
+    id 'groovy'
+}
+
+dependencies {
+    implementation 'org.apache.groovy:groovy'
+    testImplementation 'org.spockframework:spock-core'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
