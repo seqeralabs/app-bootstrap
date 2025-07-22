@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: Pet Shop API
-  version: 1.0.0
+  version: 0.0.0
   description: |-
     Pet Shop API
     A comprehensive example of Micronaut application best practices for a pet shop

@@ -5,11 +5,10 @@ import groovy.util.logging.Slf4j
 import io.micronaut.http.annotation.Controller
 import io.micronaut.security.annotation.Secured
 import io.micronaut.security.rules.SecurityRule
-import io.seqera.api.exchange.ServiceInfo
-import io.seqera.api.exchange.ServiceInfoResponse
+import io.seqera.api.model.ServiceInfo
+import io.seqera.api.model.ServiceInfoResponse
 import io.seqera.api.spec.ServiceApiSpec
 import io.seqera.app.utils.BuildInfo
-
 /**
  * Service information controller implementation
  *

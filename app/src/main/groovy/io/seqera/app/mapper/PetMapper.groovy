@@ -2,7 +2,7 @@ package io.seqera.app.mapper
 
 import io.micronaut.context.annotation.Mapper
 import io.micronaut.core.annotation.Introspected
-import io.seqera.api.exchange.*
+import io.seqera.api.model.*
 import io.seqera.app.entity.Pet
 import jakarta.inject.Singleton
 
@@ -17,7 +17,7 @@ abstract class PetMapper {
     /**
      * Map Pet entity to Pet exchange object
      */
-    abstract io.seqera.api.exchange.Pet toPet(Pet entity)
+    abstract io.seqera.api.model.Pet toPet(Pet entity)
 
     /**
      * Map CreatePetRequest to Pet entity
@@ -59,7 +59,7 @@ abstract class PetMapper {
         if (entities == null) {
             return new ListPetsResponse([])
         }
-        List<io.seqera.api.exchange.Pet> pets = entities.collect { entity -> toPet(entity) }
+        List<io.seqera.api.model.Pet> pets = entities.collect { entity -> toPet(entity) }
         return new ListPetsResponse(pets)
     }
 }

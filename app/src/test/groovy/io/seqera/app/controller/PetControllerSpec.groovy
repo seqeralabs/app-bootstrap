@@ -7,7 +7,7 @@ import io.micronaut.http.client.HttpClient
 import io.micronaut.http.client.annotation.Client
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
-import io.seqera.api.exchange.*
+import io.seqera.api.model.*
 import io.seqera.app.repository.PetRepository
 import io.seqera.app.test.DbSpec
 import jakarta.inject.Inject

@@ -8,10 +8,10 @@ This project demonstrates a clean, maintainable multi-module architecture with A
 
 ```
 app-bootstrap/
-├── api/                     # API definitions and exchange models
+├── api/                     # API definitions and model objects
 │   ├── src/main/java/
 │   │   └── io/seqera/api/
-│   │       └── exchange/    # Generated Request/Response DTOs
+│   │       └── model/       # Generated Request/Response DTOs
 │   └── spec/                # TypeSpec API definitions (source of truth)
 │       ├── main.tsp         # Main API specification
 │       └── package.json     # TypeSpec build configuration
@@ -37,7 +37,7 @@ app-bootstrap/
 
 #### 1. **API Module** (`api/`)
 - **TypeSpec Source**: `spec/main.tsp` - Single source of truth for API definitions
-- **Generated Models**: `src/main/java/io/seqera/api/exchange/` - DTOs for request/response
+- **Generated Models**: `src/main/java/io/seqera/api/model/` - DTOs for request/response
 
 #### 2. **Application Module** (`app/`)
 - **Generated Interfaces**: `src/main/java/io/seqera/api/spec/` - Controller interfaces
@@ -122,7 +122,7 @@ class Pet {
    ```bash
    ./gradlew :app:generateApiCode
    # Generates interfaces in app/src/main/java/io/seqera/api/spec/
-   # Generates DTOs in api/src/main/java/io/seqera/api/exchange/
+   # Generates DTOs in api/src/main/java/io/seqera/api/model/
    ```
 
 4. **Implement Controllers**: Controllers implement the generated interfaces

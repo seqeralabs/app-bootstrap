@@ -6,8 +6,8 @@ import io.micronaut.http.client.HttpClient
 import io.micronaut.http.client.annotation.Client
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import io.seqera.app.Application
-import io.seqera.api.exchange.ServiceInfo
-import io.seqera.api.exchange.ServiceInfoResponse
+import io.seqera.api.model.ServiceInfo
+import io.seqera.api.model.ServiceInfoResponse
 import io.seqera.app.utils.BuildInfo
 import io.seqera.app.test.DbSpec
 import jakarta.inject.Inject

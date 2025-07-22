@@ -6,7 +6,7 @@ import io.micronaut.http.annotation.*
 import io.micronaut.http.exceptions.HttpStatusException
 import io.micronaut.security.annotation.Secured
 import io.micronaut.security.rules.SecurityRule
-import io.seqera.api.exchange.*
+import io.seqera.api.model.*
 import io.seqera.api.spec.PetsApiSpec
 import io.seqera.app.mapper.PetMapper
 import io.seqera.app.service.PetService

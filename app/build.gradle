@@ -105,7 +105,7 @@ micronaut {
     openapi {
         server(project(':api').file("build/openapi/openapi.yaml")) {
             apiPackageName = "io.seqera.api.spec"
-            modelPackageName = "io.seqera.api.exchange"
+            modelPackageName = "io.seqera.api.model"
             useReactive = false
             useAuth = false
             apiNameSuffix = "ApiSpec"
@@ -225,14 +225,14 @@ tasks.named('inspectRuntimeClasspath') {
 // API Code Generation Tasks
 tasks.register('generateApiCode') {
     group = 'code generation'
-    description = 'Copy generated API interfaces and copy exchange classes to API project'
+    description = 'Copy generated API interfaces and copy model classes to API project'
     dependsOn 'generateServerOpenApiModels', 'generateServerOpenApiApis'
     
     doFirst {
         // Clean existing generated files in app
         delete fileTree('src/main/java/io/seqera/api/spec') { include '**/*.java' }
         // Clean existing generated files in API project
-        delete fileTree(project(':api').file('src/main/java/io/seqera/api/exchange')) { include '**/*.java' }
+        delete fileTree(project(':api').file('src/main/java/io/seqera/api/model')) { include '**/*.java' }
     }
     
     doLast {
@@ -243,14 +243,14 @@ tasks.register('generateApiCode') {
             include '**/*.java'
         }
         
-        // Copy exchange classes to API project (they belong there)
+        // Copy model classes to API project (they belong there)
         copy {
-            from 'build/generated/openapi/generateServerOpenApiModels/src/main/java/io/seqera/api/exchange'
-            into project(':api').file('src/main/java/io/seqera/api/exchange')
+            from 'build/generated/openapi/generateServerOpenApiModels/src/main/java/io/seqera/api/model'
+            into project(':api').file('src/main/java/io/seqera/api/model')
             include '**/*.java'
         }
         
-        logger.info("Copied generated API spec interfaces to app and exchange classes to API project")
+        logger.info("Copied generated API spec interfaces to app and model classes to API project")
     }
 }
 
