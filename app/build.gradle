@@ -2,7 +2,7 @@ import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 
 plugins {
-    id 'io.seqera.java-application-conventions'
+    id 'io.seqera.groovy-application-conventions'
     id "io.micronaut.minimal.application" version "4.5.4"
     id "io.micronaut.openapi" version "4.5.4"
     id "com.google.cloud.tools.jib" version "3.4.5"

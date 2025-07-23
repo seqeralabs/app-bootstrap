@@ -17,8 +17,11 @@ image:
 	./gradlew jibDockerBuild
 
 
-gen-code:
+gen-api:
 	./gradlew generateApiCode
+
+gen-docs: 
+	./gradlew generateSwaggerUI
 
 #
 # Show dependencies try `make deps config=runtime`, `make deps config=google`

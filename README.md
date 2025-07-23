@@ -210,13 +210,129 @@ curl -b cookies.txt -X POST http://localhost:8080/pets \
 
 ## 🧪 Development & Testing
 
-### Code Generation (Manual)
+### Code Generation & Documentation
+
+#### API Documentation Generation
 ```bash
-# Generate API code from TypeSpec (run manually when API changes)
+# Generate OpenAPI spec from TypeSpec source
+./gradlew :api:generateOpenApi
+
+# Generate Swagger UI for interactive documentation
+./gradlew :app:generateSwaggerUI
+
+# Access generated documentation
+open http://localhost:8080/openapi/index.html
+```
+
+#### Code Generation Workflow
+```bash
+# Complete API code generation pipeline (recommended)
 ./gradlew :app:generateApiCode
 
-# Generate Swagger UI
-./gradlew :app:generateSwaggerUI
+# This task performs the following steps:
+# 1. Generates OpenAPI spec from TypeSpec source (api/spec/main.tsp)
+# 2. Generates Java interfaces for controllers (app/src/main/java/io/seqera/api/spec/)
+# 3. Generates DTOs/model classes (api/src/main/java/io/seqera/api/model/)
+# 4. Copies generated code to appropriate modules
+```
+
+#### Manual Code Generation Steps
+```bash
+# Step 1: Generate OpenAPI specification
+cd api/spec
+npm install
+npm run typespec:compile
+
+# Step 2: Generate server-side interfaces and models
+./gradlew :app:generateServerOpenApiApis    # Controller interfaces
+./gradlew :app:generateServerOpenApiModels  # DTO classes
+
+# Step 3: Copy generated code to proper locations
+./gradlew :app:generateApiCode              # Automated copy task
+```
+
+#### Publishing API Client to Maven
+
+##### Local Publishing (for testing)
+```bash
+# Publish API client to local Maven repository
+./gradlew :api:publishToMavenLocal
+
+# The API client will be available as:
+# Group ID: io.seqera
+# Artifact ID: api
+# Version: [from VERSION file]
+```
+
+##### Production Publishing
+```bash
+# Publish to Seqera Maven repository (requires AWS credentials)
+export AWS_ACCESS_KEY_ID=your_access_key
+export AWS_SECRET_ACCESS_KEY=your_secret_key
+export PUBLISH_REPO_URL=s3://maven.seqera.io/releases  # or /snapshots
+
+# Publish the API client
+./gradlew :api:publish
+
+# Alternative: Set credentials via Gradle properties
+./gradlew :api:publish \
+  -Paws_access_key_id=your_access_key \
+  -Paws_secret_access_key=your_secret_key \
+  -Ppublish_repo_url=s3://maven.seqera.io/releases
+```
+
+##### Client Usage Example
+After publishing, other projects can consume the API client:
+
+```groovy
+// In consuming project's build.gradle
+dependencies {
+    implementation 'io.seqera:api:1.0.0'
+}
+```
+
+```java
+// Using the generated models
+import io.seqera.api.model.Pet;
+import io.seqera.api.model.CreatePetRequest;
+
+CreatePetRequest request = new CreatePetRequest()
+    .name("Fluffy")
+    .species("Cat")
+    .breed("Persian")
+    .age(3);
+```
+
+#### Generated Code Structure
+```
+api/src/main/java/io/seqera/api/
+└── model/                          # Generated DTOs
+    ├── Pet.java                    # Pet entity model
+    ├── CreatePetRequest.java       # Create request DTO
+    ├── UpdatePetRequest.java       # Update request DTO
+    └── ...
+
+app/src/main/java/io/seqera/api/
+└── spec/                           # Generated controller interfaces
+    ├── PetsApiSpec.java            # Pet API interface
+    ├── AuthApiSpec.java            # Auth API interface
+    └── ...
+```
+
+#### Development Workflow Best Practices
+
+1. **API-First Development**: Always start by updating `api/spec/main.tsp`
+2. **Code Generation**: Run `./gradlew :app:generateApiCode` after TypeSpec changes
+3. **Implementation**: Implement generated interfaces in controller classes
+4. **Testing**: Test both API contracts and implementations
+5. **Publishing**: Publish API client for external consumers
+
+```bash
+# Typical development cycle
+vim api/spec/main.tsp              # 1. Update API specification
+./gradlew :app:generateApiCode     # 2. Generate code
+vim app/src/main/groovy/...        # 3. Implement controllers
+./gradlew test                     # 4. Run tests
 ```
 
 ### Testing
