@@ -1,0 +1,333 @@
+openapi: 3.0.0
+info:
+  title: Pet Shop API
+  version: 0.0.0
+  description: |-
+    Pet Shop API
+    A comprehensive example of Micronaut application best practices for a pet shop
+tags:
+  - name: Service
+  - name: Pets
+paths:
+  /api/v1/pets/:
+    get:
+      operationId: PetApi_listPets
+      description: List all pets
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListPetsResponse'
+      tags:
+        - Pets
+    post:
+      operationId: PetApi_createPet
+      description: Create a new pet
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatePetResponse'
+        default:
+          description: An unexpected error response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Pets
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePetRequest'
+  /api/v1/pets/{id}:
+    get:
+      operationId: PetApi_getPet
+      description: Get pet by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetPetResponse'
+        default:
+          description: An unexpected error response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Pets
+    put:
+      operationId: PetApi_updatePet
+      description: Update an existing pet
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdatePetResponse'
+        default:
+          description: An unexpected error response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Pets
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePetRequest'
+    delete:
+      operationId: PetApi_deletePet
+      description: Delete a pet
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
+        default:
+          description: An unexpected error response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Pets
+  /service-info:
+    get:
+      operationId: ServiceApi_getServiceInfo
+      description: Get service information
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceInfoResponse'
+      tags:
+        - Service
+components:
+  schemas:
+    CreatePetRequest:
+      type: object
+      required:
+        - name
+        - species
+        - age
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: Pet's name
+        species:
+          type: string
+          minLength: 1
+          maxLength: 50
+          description: Pet species (e.g., dog, cat, bird)
+        breed:
+          type: string
+          maxLength: 50
+          description: Pet breed
+        age:
+          type: integer
+          format: int32
+          minimum: 0
+          maximum: 50
+          description: Pet age in years
+        color:
+          type: string
+          maxLength: 20
+          description: Pet color
+        description:
+          type: string
+          maxLength: 500
+          description: Pet description
+      description: Pet creation request
+    CreatePetResponse:
+      type: object
+      required:
+        - pet
+      properties:
+        pet:
+          $ref: '#/components/schemas/Pet'
+      description: Pet creation response
+    ErrorResponse:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          description: Error message
+        details:
+          type: string
+          description: Error details
+      description: Error response
+    GetPetResponse:
+      type: object
+      required:
+        - pet
+      properties:
+        pet:
+          $ref: '#/components/schemas/Pet'
+      description: Get pet response
+    ListPetsResponse:
+      type: object
+      required:
+        - pets
+      properties:
+        pets:
+          type: array
+          items:
+            $ref: '#/components/schemas/Pet'
+      description: List pets response
+    Pet:
+      type: object
+      required:
+        - id
+        - name
+        - species
+        - age
+        - isAvailable
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Pet ID
+        name:
+          type: string
+          description: Pet's name
+        species:
+          type: string
+          description: Pet species (e.g., dog, cat, bird)
+        breed:
+          type: string
+          description: Pet breed
+        age:
+          type: integer
+          format: int32
+          description: Pet age in years
+        color:
+          type: string
+          description: Pet color
+        description:
+          type: string
+          description: Pet description
+        isAvailable:
+          type: boolean
+          description: Whether the pet is available for adoption
+        createdAt:
+          type: string
+          format: date-time
+          description: Creation timestamp
+        updatedAt:
+          type: string
+          format: date-time
+          description: Last update timestamp
+      description: Pet model for API responses
+    ServiceInfo:
+      type: object
+      required:
+        - version
+        - commitId
+      properties:
+        version:
+          type: string
+          description: Application version
+        commitId:
+          type: string
+          description: Build commit ID
+      description: Service information model
+    ServiceInfoResponse:
+      type: object
+      required:
+        - serviceInfo
+      properties:
+        serviceInfo:
+          $ref: '#/components/schemas/ServiceInfo'
+      description: Service information response
+    UpdatePetRequest:
+      type: object
+      required:
+        - name
+        - species
+        - age
+        - isAvailable
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: Pet's name
+        species:
+          type: string
+          minLength: 1
+          maxLength: 50
+          description: Pet species (e.g., dog, cat, bird)
+        breed:
+          type: string
+          maxLength: 50
+          description: Pet breed
+        age:
+          type: integer
+          format: int32
+          minimum: 0
+          maximum: 50
+          description: Pet age in years
+        color:
+          type: string
+          maxLength: 20
+          description: Pet color
+        description:
+          type: string
+          maxLength: 500
+          description: Pet description
+        isAvailable:
+          type: boolean
+          description: Whether the pet is available for adoption
+      description: Pet update request
+    UpdatePetResponse:
+      type: object
+      required:
+        - pet
+      properties:
+        pet:
+          $ref: '#/components/schemas/Pet'
+      description: Pet update response

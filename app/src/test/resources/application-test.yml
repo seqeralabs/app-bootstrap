@@ -1,0 +1,17 @@
+app:
+  test: foo
+
+micronaut:
+  environments: test
+  security:
+    enabled: false  # Disable security for tests
+
+datasources:
+  default:
+    dialect: POSTGRES
+    # TestContainers will provide the actual URL dynamically
+    url: jdbc:postgresql://localhost:5432/test
+    driverClassName: org.postgresql.Driver
+    username: test
+    password: test
+    schema-generate: NONE  # Use Flyway migrations instead

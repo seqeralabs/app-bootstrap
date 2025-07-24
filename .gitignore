@@ -4,6 +4,7 @@ Thumbs.db
 build/
 target/
 out/
+node_modules/
 .micronaut/
 .idea
 *.iml
