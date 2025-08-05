@@ -6,10 +6,13 @@ import java.nio.file.Paths
 import java.nio.file.StandardOpenOption
 import java.util.stream.Collectors
 
+import groovy.transform.CompileStatic
+
 /**
  * Helper class for merging multiple SQL schema files into a single temporary file
  * for PostgreSQL TestContainers initialization.
  */
+@CompileStatic
 class SchemaFileMerger {
 
     private static String mergedSchemaFilePath = null

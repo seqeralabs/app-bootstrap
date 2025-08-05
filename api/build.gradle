@@ -65,4 +65,5 @@ tasks.register('generateOpenApi') {
 clean {
     delete 'build/openapi'
     delete 'node_modules'
+    delete 'typescript'
 }

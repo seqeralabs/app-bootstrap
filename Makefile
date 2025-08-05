@@ -18,7 +18,7 @@ image:
 
 
 gen-api:
-	./gradlew generateApiCode
+	./gradlew app:generateApiCode
 
 gen-docs: 
 	./gradlew generateSwaggerUI

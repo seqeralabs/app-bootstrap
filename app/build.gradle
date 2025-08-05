@@ -7,6 +7,7 @@ plugins {
     id "io.micronaut.openapi" version "4.5.4"
     id "com.google.cloud.tools.jib" version "3.4.5"
     id 'org.asciidoctor.jvm.convert' version '3.3.2'
+    id 'org.openapi.generator' version '7.8.0'
 }
 
 String gitVersion() {
@@ -226,7 +227,7 @@ tasks.named('inspectRuntimeClasspath') {
 tasks.register('generateApiCode') {
     group = 'code generation'
     description = 'Copy generated API interfaces and copy model classes to API project'
-    dependsOn 'generateServerOpenApiModels', 'generateServerOpenApiApis'
+    dependsOn 'generateServerOpenApiModels', 'generateServerOpenApiApis', 'generateTypeScriptModels'
     
     doFirst {
         // Clean existing generated files in app
@@ -276,6 +277,65 @@ tasks.withType(JavaCompile) {
 afterEvaluate {
     sourceSets.main.java.srcDirs = sourceSets.main.java.srcDirs.findAll { srcDir ->
         !srcDir.toString().contains('build/generated')
+    }
+}
+
+// TypeScript model generation task
+tasks.register('generateTypeScriptModels', org.openapitools.generator.gradle.plugin.tasks.GenerateTask) {
+    group = 'code generation'
+    description = 'Generate TypeScript models from OpenAPI spec'
+    dependsOn project(':api').tasks.named('generateOpenApi')
+    
+    generatorName = 'typescript-fetch'
+    inputSpec = project(':api').file("build/openapi/openapi.yaml").toString()
+    outputDir = project(':api').file("typescript").toString()
+    
+    // Configure generation settings
+    configOptions = [
+        modelPackage: 'models',
+        withInterfaces: 'true',
+        enumPropertyNaming: 'UPPERCASE',
+        supportsES6: 'true',
+        npmName: 'petshop-api-models',
+        npmVersion: project.version,
+        generateModelTests: 'false',
+        generateApiTests: 'false'
+    ]
+    
+    // Generate only models, not API client
+    globalProperties = [
+        models: '',
+        modelTests: 'false',
+        modelDocs: 'false',
+        apis: 'false',
+        apiTests: 'false',
+        apiDocs: 'false',
+        supportingFiles: 'false'
+    ]
+    
+    inputs.files(project(':api').file('build/openapi/openapi.yaml'))
+    outputs.dir(project(':api').file('typescript'))
+    
+    doLast {
+        // Create index.ts for convenient imports
+        def indexFile = project(':api').file('typescript/index.ts')
+        def indexContent = """\
+// Auto-generated TypeScript models for Pet Shop API
+// Generated from OpenAPI specification
+
+export * from './src/models/Pet';
+export * from './src/models/CreatePetRequest';
+export * from './src/models/CreatePetResponse';
+export * from './src/models/UpdatePetRequest';
+export * from './src/models/UpdatePetResponse';
+export * from './src/models/GetPetResponse';
+export * from './src/models/ListPetsResponse';
+export * from './src/models/ErrorResponse';
+export * from './src/models/ServiceInfo';
+export * from './src/models/ServiceInfoResponse';
+"""
+        indexFile.text = indexContent
+        logger.info("Generated TypeScript models in ${project(':api').file('typescript')}")
     }
 }
 
