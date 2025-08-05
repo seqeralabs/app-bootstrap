@@ -1,0 +1,10 @@
+src/models/CreatePetRequest.ts
+src/models/CreatePetResponse.ts
+src/models/ErrorResponse.ts
+src/models/GetPetResponse.ts
+src/models/ListPetsResponse.ts
+src/models/Pet.ts
+src/models/ServiceInfo.ts
+src/models/ServiceInfoResponse.ts
+src/models/UpdatePetRequest.ts
+src/models/UpdatePetResponse.ts
