@@ -222,18 +222,27 @@ tasks.named('inspectRuntimeClasspath') {
     dependsOn generateSwaggerUI
 }
 
+// Clean old generated files
+tasks.register('cleanApiCode') {
+    group = 'code generation'
+    description = 'Clean existing generated API files'
+    
+    doLast {
+        // Clean generated files from both projects
+        delete fileTree('src/main/java/io/seqera/api/spec') { include '**/*.java' }
+        delete fileTree(project(':api').file('src/main/java/io/seqera/api/model')) { include '**/*.java' }
+        
+        logger.info("Cleaned generated API files")
+    }
+}
+
 // API Code Generation Tasks
 tasks.register('generateApiCode') {
     group = 'code generation'
     description = 'Copy generated API interfaces and copy model classes to API project'
-    dependsOn 'generateServerOpenApiModels', 'generateServerOpenApiApis'
+    dependsOn 'cleanApiCode', 'generateServerOpenApiModels', 'generateServerOpenApiApis'
     
-    doFirst {
-        // Clean existing generated files in app
-        delete fileTree('src/main/java/io/seqera/api/spec') { include '**/*.java' }
-        // Clean existing generated files in API project
-        delete fileTree(project(':api').file('src/main/java/io/seqera/api/model')) { include '**/*.java' }
-    }
+    mustRunAfter 'cleanApiCode'
     
     doLast {
         // Copy spec interfaces to app project (stay here)
