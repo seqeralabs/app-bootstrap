@@ -185,9 +185,12 @@ tasks.register('generateSwaggerUI') {
         def resourcesDir = file('src/main/resources/public/openapi')
         def version = file('../VERSION').text.trim()
         
-        // Clean and create directory
-        resourcesDir.deleteDir()
+        // Create directory if it doesn't exist (preserve existing versioned files)
         resourcesDir.mkdirs()
+        
+        // Remove only the latest version file to avoid conflicts
+        new File(resourcesDir, 'openapi-latest.yaml').delete()
+        new File(resourcesDir, 'index.html').delete()
         
         // Copy OpenAPI specs with versioning (YAML only) from API project
         copy {
