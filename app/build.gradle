@@ -205,6 +205,32 @@ tasks.register('generateSwaggerUI') {
             rename 'openapi.yaml', "openapi-${version}.yaml"
         }
         
+        // Collect all available OpenAPI version files
+        def availableVersions = []
+        resourcesDir.listFiles().findAll { it.name.startsWith('openapi-') && it.name.endsWith('.yaml') && !it.name.endsWith('-latest.yaml') }
+            .collect { it.name.replaceAll(/openapi-(.+)\.yaml/, '$1') }
+            .each { availableVersions << it }
+        
+        // Sort versions in descending order (newest first)
+        availableVersions.sort { a, b ->
+            def parseVersion = { v -> v.split(/\./).collect { it.toInteger() } }
+            def aVer = parseVersion(a)
+            def bVer = parseVersion(b)
+            
+            for (int i = 0; i < Math.max(aVer.size(), bVer.size()); i++) {
+                int aPart = i < aVer.size() ? aVer[i] : 0
+                int bPart = i < bVer.size() ? bVer[i] : 0
+                if (aPart != bPart) {
+                    return bPart <=> aPart
+                }
+            }
+            return 0
+        }
+        
+        // Generate versions.txt index file
+        def versionsFile = new File(resourcesDir, 'versions.txt')
+        versionsFile.text = availableVersions.join('\n')
+        
         // Generate index.html from template
         def templateFile = file('src/main/resources/swagger-ui-template.html')
         def indexHtml = file("${resourcesDir}/index.html")

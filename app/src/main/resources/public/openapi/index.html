@@ -51,7 +51,6 @@
         <label>OpenAPI Spec:</label>
         <select id="spec-selector" onchange="changeSpec()">
             <option value="./openapi-latest.yaml">Latest (YAML)</option>
-            <option value="./openapi-0.0.0.yaml">Version 0.0.0 (YAML)</option>
         </select>
     </div>
     
@@ -89,7 +88,28 @@
             initSwaggerUI(selectedUrl);
         }
         
-        window.onload = function() {
+        async function loadAvailableVersions() {
+            try {
+                const response = await fetch('./versions.txt');
+                const text = await response.text();
+                const versions = text.trim().split('\n').filter(v => v.length > 0);
+                
+                const selector = document.getElementById('spec-selector');
+                versions.forEach(version => {
+                    const option = document.createElement('option');
+                    option.value = `./openapi-${version}.yaml`;
+                    option.textContent = `Version ${version} (YAML)`;
+                    selector.appendChild(option);
+                });
+            } catch (error) {
+                console.warn('Could not load available versions:', error);
+            }
+        }
+        
+        window.onload = async function() {
+            // Load available versions first
+            await loadAvailableVersions();
+            
             // Default to latest YAML version
             initSwaggerUI('./openapi-latest.yaml');
         };
