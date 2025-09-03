@@ -139,16 +139,13 @@ jib {
         filesModificationTime = "${OffsetDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME)}"
         ports = ['8080']
         entrypoint = '/bin/sh'
-        args = ['/launch.sh']  // copied from `src/main/jib` directory
-        environment = [
-                'MICRONAUT_ENVIRONMENTS': 'prod'
-        ]
+        args = ['/app.sh']  // copied from `src/main/jib` directory
     }
     extraDirectories {
         paths {
             path { from = file('src/main/jib'); }
         }
-        permissions = ['/launch.sh': '755']
+        permissions = ['/app.sh': '755']
     }
     allowInsecureRegistries= findProperty("jibRepo")?.toString()?.indexOf('localhost') != -1
 }
