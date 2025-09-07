@@ -26,38 +26,77 @@ test {
     useJUnitPlatform()
 }
 
-// TypeSpec OpenAPI generation tasks
+// ----------------------------------------------------------------------------
+// API Generation: TypeSpec to OpenAPI Conversion
+//
+// This project uses TypeSpec (https://typespec.io) to define the API schema in a 
+// type-safe, language-agnostic way, then generates OpenAPI YAML files for use by:
+// 1. Micronaut OpenAPI code generation (Java interfaces/models)  
+// 2. Swagger UI documentation
+// 3. API client generation in other languages
+//
+// The API versioning strategy uses TypeSpec's native @versioned decorator to manage
+// multiple API versions from a single source. Each version is defined in the 
+// spec/main.tsp file with semantic version numbers (e.g., "1.0.0", "2.0.0").
+//
+// Key files generated:
+// - openapi-{version}.yaml: Version-specific OpenAPI specs (e.g., openapi-1.0.0.yaml)
+// - openapi-latest.yaml: Always contains the newest/latest API version
+//
+// The generation process uses TypeSpec compilation + bash latest lookup to create both types:
+// 1. TypeSpec compilation: Produces versioned files using {version} placeholder 
+// 2. Bash oneliner: Finds highest version and saves as latest file
+// ----------------------------------------------------------------------------
+
 tasks.register('installTypeSpec', Exec) {
     group = 'api generation'
-    description = 'Install TypeSpec dependencies'
+    description = 'Install TypeSpec compiler and dependencies from package.json'
     commandLine 'sh', '-c', 'npm install'
-    workingDir = projectDir
+    workingDir = file('spec')
 }
 
 tasks.register('generateOpenApi') {
     group = 'api generation'
-    description = 'Generate OpenAPI spec from TypeSpec source'
+    description = '''Generate OpenAPI specifications from TypeSpec source
+    
+    This task uses TypeSpec compilation followed by bash latest lookup:
+    1. TypeSpec compilation produces versioned openapi-{version}.yaml files (one per API version)
+    2. Bash oneliner finds highest version and saves as openapi-latest.yaml
+    
+    The process:
+    - TypeSpec compilation: Uses spec/tspconfig.yaml to produce versioned files
+    - Bash oneliner: Semantic version sorting finds newest and saves as latest
+    
+    Output files created in build/openapi/:
+    - openapi-1.0.0.yaml (version-specific)
+    - openapi-latest.yaml (copy of highest version)
+    '''
     dependsOn 'installTypeSpec'
     
     doLast {
-        def version = file('../VERSION').text.trim()
-        
-        // Generate OpenAPI spec from TypeSpec
+        // TYPESPEC COMPILATION + BASH LATEST LOOKUP STRATEGY:
+        //
+        // Two-step process: TypeSpec produces versioned files, then bash finds the latest.
+        //
+        // Command breakdown:
+        // 1. "tsp compile ." (via npm run build)
+        //    - Uses spec/tspconfig.yaml settings  
+        //    - Produces versioned files: openapi-{version}.yaml
+        //    - Creates one file per version defined in the Versions enum
+        //
+        // 2. "find ... | sort -V | tail -1 | xargs -I {} cp {} openapi-latest.yaml"  
+        //    - Bash oneliner finds all versioned files
+        //    - Uses semantic version sorting (sort -V) to order properly
+        //    - Saves the highest version file as openapi-latest.yaml
+        //
+        // This approach is simpler and more reliable than multiple TypeSpec compilations.
         exec {
-            workingDir = projectDir
-            commandLine 'sh', '-c', 'npm run typespec:compile'
-        }
-        
-        // Post-process the generated YAML to inject version from VERSION file
-        def openApiFile = file('build/openapi/openapi.yaml')
-        if (openApiFile.exists()) {
-            def content = openApiFile.text
-            content = content.replaceAll(/version:\s*1\.0\.0/, "version: ${version}")
-            openApiFile.text = content
+            workingDir = file('spec')
+            commandLine 'sh', '-c', 'npm run build'
         }
     }
     
-    inputs.files('spec/main.tsp', 'spec/tspconfig.yaml', '../VERSION')
+    inputs.files('spec/main.tsp', 'spec/tspconfig.yaml', 'spec/package.json')
     outputs.dir('build/openapi')
 }
 

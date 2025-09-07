@@ -103,7 +103,7 @@ micronaut {
         annotations("io.seqera.*")
     }
     openapi {
-        server(project(':api').file("build/openapi/openapi.yaml")) {
+        server(project(':api').file("build/openapi/openapi-latest.yaml")) {
             apiPackageName = "io.seqera.api.spec"
             modelPackageName = "io.seqera.api.model"
             useReactive = false
@@ -189,22 +189,18 @@ tasks.register('generateSwaggerUI') {
         new File(resourcesDir, 'openapi-latest.yaml').delete()
         new File(resourcesDir, 'index.html').delete()
         
-        // Copy OpenAPI specs with versioning (YAML only) from API project
+        // Copy all OpenAPI specs with versioning from API project
+        def apiProjectDir = project(':api').file('build/openapi')
         copy {
-            from project(':api').file('build/openapi/openapi.yaml')
+            from apiProjectDir
             into resourcesDir
-            rename 'openapi.yaml', 'openapi-latest.yaml'
-        }
-        
-        copy {
-            from project(':api').file('build/openapi/openapi.yaml')
-            into resourcesDir
-            rename 'openapi.yaml', "openapi-${version}.yaml"
+            include 'openapi-*.yaml'
+            exclude 'openapi.yaml' // Avoid old format
         }
         
         // Collect all available OpenAPI version files
         def availableVersions = []
-        resourcesDir.listFiles().findAll { it.name.startsWith('openapi-') && it.name.endsWith('.yaml') && !it.name.endsWith('-latest.yaml') }
+        resourcesDir.listFiles().findAll { it.name.matches(/openapi-\d+\.\d+\.\d+\.yaml/) }
             .collect { it.name.replaceAll(/openapi-(.+)\.yaml/, '$1') }
             .each { availableVersions << it }
         

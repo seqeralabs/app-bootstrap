@@ -98,24 +98,38 @@ class Pet {
 
 ## 🛠️ API Development Workflow
 
-### TypeSpec-Driven Development
+### TypeSpec-Driven Development with Versioning
 
-1. **Define API Contract** in `api/spec/main.tsp`:
+The API uses **TypeSpec's native versioning** with the `@versioned` decorator for type-safe API evolution:
+
+1. **Define API Contract** in `api/spec/main.tsp` with versioning:
    ```typescript
+   @service(#{
+     title: "Pet Shop API",
+   })
+   @versioned(Versions)
+   namespace PetShop {
+   
+   enum Versions {
+     @doc("1.0.0") v1_0: "1.0.0",
+   }
+   
    @route("/pets")
    interface Pets {
      @get list(): Pet[];
      @post create(@body pet: CreatePetRequest): Pet;
      @get("{id}") get(@path id: int64): Pet;
    }
+   }
    ```
 
-2. **Generate OpenAPI Spec**:
+2. **Generate Versioned OpenAPI Specs**:
    ```bash
    cd api/spec
    npm install
    npm run build
-   # Generates: api/spec/tsp-output/@typespec/openapi3/openapi.yaml
+   # Generates: api/build/openapi/openapi-1.0.0.yaml (versioned)
+   # Generates: api/build/openapi/openapi-latest.yaml (highest version)
    ```
 
 3. **Generate Java Code**:
@@ -126,6 +140,44 @@ class Pet {
    ```
 
 4. **Implement Controllers**: Controllers implement the generated interfaces
+
+### API Versioning Strategy
+
+This project uses **TypeSpec's native `@versioned` decorator** for type-safe API evolution:
+
+#### Version Management
+- **Version Definition**: Versions are defined in the `Versions` enum using semantic versioning
+- **TypeSpec Compilation**: Produces `openapi-{version}.yaml` files (one per version) 
+- **Latest File**: Bash oneliner finds highest version and creates `openapi-latest.yaml`
+- **Backward Compatibility**: Existing consumers can continue using `openapi-latest.yaml`
+
+#### Adding New API Versions
+```typescript
+// In api/spec/main.tsp
+enum Versions {
+  @doc("1.0.0") v1_0: "1.0.0",  // Current version
+  @doc("1.1.0") v1_1: "1.1.0",  // New version with added features
+  @doc("2.0.0") v2_0: "2.0.0",  // Breaking changes
+}
+
+// Adding version-specific features
+interface PetApi {
+  @get list(): Pet[];
+  
+  // New field in v1.1
+  @added(Versions.v1_1)
+  @get("/categories") getCategories(): PetCategory[];
+  
+  // Breaking change in v2.0
+  @renamedFrom(Versions.v2_0, "list")
+  @get("/all") getAllPets(): Pet[];
+}
+```
+
+#### Generated Files
+- `api/build/openapi/openapi-1.0.0.yaml` - Version-specific API spec
+- `api/build/openapi/openapi-1.1.0.yaml` - New version with added features  
+- `api/build/openapi/openapi-latest.yaml` - Always contains highest version
 
 ### API Specification Publishing
 - **Swagger UI**: Automatically generated at `/openapi/index.html`
@@ -241,7 +293,7 @@ open http://localhost:8080/openapi/index.html
 # Step 1: Generate OpenAPI specification
 cd api/spec
 npm install
-npm run typespec:compile
+npm run build
 
 # Step 2: Generate server-side interfaces and models
 ./gradlew :app:generateServerOpenApiApis    # Controller interfaces

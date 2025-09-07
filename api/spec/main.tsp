@@ -1,19 +1,31 @@
 import "@typespec/http";
 import "@typespec/rest";
 import "@typespec/openapi3";
+import "@typespec/versioning";
 
 using TypeSpec.Http;
 using TypeSpec.Rest;
+using TypeSpec.Versioning;
 
 /**
  * Pet Shop API
  * A comprehensive example of Micronaut application best practices for a pet shop
  */
-@service({
+@service(#{
   title: "Pet Shop API",
-  version: "1.0.0",
 })
-namespace PetShop;
+@versioned(Versions)
+namespace PetShop {
+
+/**
+ * API versions
+ * 
+ * Following semantic versioning:
+ * - 1.0.0: Initial stable API
+ */
+enum Versions {
+  @doc("1.0.0") v1_0: "1.0.0",
+}
 
 /**
  * Service information model
@@ -282,4 +294,6 @@ interface PetApi {
   @delete
   @route("/{id}")
   deletePet(@path id: int64): void | ErrorResponse;
+}
+
 }

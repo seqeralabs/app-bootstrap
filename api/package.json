@@ -3,10 +3,11 @@
   "version": "1.0.0",
   "description": "Pet Shop API TypeSpec definitions",
   "devDependencies": {
-    "@typespec/compiler": "^0.62.0",
-    "@typespec/http": "^0.62.0",
-    "@typespec/rest": "^0.62.0",
-    "@typespec/openapi3": "^0.62.0"
+    "@typespec/compiler": "latest",
+    "@typespec/http": "latest",
+    "@typespec/rest": "latest",
+    "@typespec/openapi3": "latest",
+    "@typespec/versioning": "latest"
   },
   "scripts": {
     "typespec:compile": "tsp compile spec/main.tsp --output-dir build/openapi"

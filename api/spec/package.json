@@ -4,7 +4,8 @@
   "description": "TypeSpec API definition for App Bootstrap",
   "type": "module",
   "scripts": {
-    "build": "tsp compile .",
+    "_comment": "TypeSpec compilation produces versioned openapi-{version}.yaml files, then bash oneliner finds highest version and saves as openapi-latest.yaml",
+    "build": "tsp compile . && find ../build/openapi -name 'openapi-*.yaml' -not -name 'openapi-latest.yaml' | sort -V | tail -1 | xargs -I {} cp {} ../build/openapi/openapi-latest.yaml",
     "watch": "tsp compile . --watch",
     "clean": "rimraf tsp-output"
   },
@@ -13,6 +14,7 @@
     "@typespec/http": "latest",
     "@typespec/rest": "latest",
     "@typespec/openapi3": "latest",
+    "@typespec/versioning": "latest",
     "rimraf": "latest"
   }
 }
